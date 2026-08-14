@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="APIキー不要・ブラウザ内完結の family-relations-core Playground" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'" />
+    <title>family-relations-core Playground</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <p class="eyebrow">ZERO RUNTIME DEPENDENCIES</p>
+      <h1>Family relations, explained and validated.</h1>
+      <p>
+        匿名JSONから続柄・生まれ順・構造エラー・レイアウトを確認できます。
+        データはブラウザの外へ送信されず、APIキーも不要です。
+      </p>
+    </header>
+
+    <main>
+      <section class="controls panel" aria-labelledby="input-title">
+        <div class="section-heading">
+          <div>
+            <p class="step">01 / INPUT</p>
+            <h2 id="input-title">Family graph JSON</h2>
+          </div>
+          <button id="load-example" type="button">匿名サンプルを復元</button>
+        </div>
+        <textarea id="json-input" spellcheck="false" aria-label="Family graph JSON"></textarea>
+        <div class="actions">
+          <label>起点 <select id="origin"></select></label>
+          <label>相手 <select id="target"></select></label>
+          <label>表示言語
+            <select id="locale">
+              <option value="ja">日本語</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+          <button id="run" class="primary" type="button">解析する</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Analysis summary">
+        <article class="metric panel">
+          <p class="step">RELATION</p>
+          <strong id="relation-result">—</strong>
+          <span id="relation-path">起点と相手を選択</span>
+        </article>
+        <article class="metric panel">
+          <p class="step">BIRTH ORDER</p>
+          <strong id="birth-order-result">—</strong>
+          <span>同じ親・同じ性別の生年月日順</span>
+        </article>
+        <article class="metric panel">
+          <p class="step">VALIDATION</p>
+          <strong id="validation-result">—</strong>
+          <span id="validation-detail">JSONを解析してください</span>
+        </article>
+      </section>
+
+      <section class="panel graph-panel" aria-labelledby="graph-title">
+        <div class="section-heading">
+          <div>
+            <p class="step">02 / LAYOUT</p>
+            <h2 id="graph-title">Deterministic family layout</h2>
+          </div>
+          <p class="legend"><i></i> parent-child <i></i> partnership</p>
+        </div>
+        <div class="graph-scroll"><svg id="graph" role="img" aria-label="Family graph layout"></svg></div>
+      </section>
+
+      <section class="panel" aria-labelledby="issues-title">
+        <p class="step">03 / ISSUES</p>
+        <h2 id="issues-title">Validation details</h2>
+        <ul id="issues"><li>問題はまだ確認されていません。</li></ul>
+      </section>
+    </main>
+
+    <footer>
+      <span>family-relations-core</span>
+      <span>Local-only playground · MIT</span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "name": "family-relations-core",
+  "version": "0.1.0",
+  "description": "Zero-dependency TypeScript primitives for kinship labels, family graph validation, birth order, and deterministic layouts.",
+  "keywords": [
+    "family-tree",
+    "genealogy",
+    "graph",
+    "kinship",
+    "layout",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Yuta Kiyohara",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiyohara1021/family-relations-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kiyohara1021/family-relations-core/issues"
+  },
+  "homepage": "https://kiyohara1021.github.io/family-relations-core/",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "CODE_OF_CONDUCT.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:playground": "npm run build && node scripts/build-playground.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.js",
+    "check": "npm run typecheck && npm test && npm pack --dry-run --ignore-scripts",
+    "prepack": "npm run check"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  },
+  "packageManager": "npm@11.16.0"
+}
