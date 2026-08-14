@@ -36,4 +36,4 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run build:playground
-      - run: test -f site/index.html && test -f site/lib/index.js && test -f site/example.json
+      - run: test -f site/index.html && test -f "site/lib/$(node -p 'require(\"./package.json\").version')/index.js" && test -f site/example.json
