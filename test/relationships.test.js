@@ -36,6 +36,7 @@ test("describes direct and collateral blood relationships", () => {
 
 test("supports Japanese labels and elder/younger aunt distinction", () => {
   assert.equal(describeRelationship(graph, "self", "grandparent", { locale: "ja" }).label, "祖母");
+  assert.equal(describeRelationship(graph, "grandparent", "self", { locale: "ja" }).label, "孫");
   assert.equal(describeRelationship(graph, "self", "aunt", { locale: "ja" }).label, "伯母");
   assert.equal(describeRelationship(graph, "self", "cousin", { locale: "ja" }).label, "従姉妹");
 });

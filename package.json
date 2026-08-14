@@ -1,6 +1,6 @@
 {
   "name": "family-relations-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency TypeScript primitives for kinship labels, family graph validation, birth order, and deterministic layouts.",
   "keywords": [
     "family-tree",

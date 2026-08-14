@@ -70,7 +70,7 @@ function japaneseAncestor(person: FamilyPerson, depth: number): string {
 
 function japaneseDescendant(person: FamilyPerson, depth: number): string {
   if (depth === 1) return sexWord(person, "息子", "娘", "子");
-  if (depth === 2) return sexWord(person, "孫息子", "孫娘", "孫");
+  if (depth === 2) return "孫";
   const fixed = ["", "", "曾孫", "玄孫"];
   return fixed[depth] ?? `${depth}代後の子孫`;
 }

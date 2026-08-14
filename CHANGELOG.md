@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-14
+
+### Changed
+
+- Use the natural Japanese label `孫` for grandchildren of any sex; sex remains available in the person data.
+
 ## [0.1.0] - 2026-08-14
 
 ### Added
@@ -15,5 +21,6 @@ All notable changes to this project will be documented in this file. The format 
 - Anonymous fixture and local-only browser playground.
 - Node.js 24 and 26 CI, GitHub Pages workflow, and public project documentation.
 
-[Unreleased]: https://github.com/kiyohara1021/family-relations-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kiyohara1021/family-relations-core/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/kiyohara1021/family-relations-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/kiyohara1021/family-relations-core/releases/tag/v0.1.0
