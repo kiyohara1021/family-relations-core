@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- Layout places a spouse who has no parents in the graph in their partner's generation instead of the top row, so the couple shares a household and their children sit one row below.
+- Inferred generations no longer depend on the order of `people`; a child is placed only after every parent's generation is known.
+
 ## [0.1.1] - 2026-08-14
 
 ### Changed
