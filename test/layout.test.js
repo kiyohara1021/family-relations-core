@@ -54,6 +54,52 @@ test("infers generations and supports negative explicit generations", () => {
   assert.ok(byId(layout, "parent").y < byId(layout, "child").y);
 });
 
+const marriedInFamily = {
+  people: [
+    { id: "gpa" },
+    { id: "gma" },
+    { id: "child", parentIds: ["dad", "mom"] },
+    { id: "dad", parentIds: ["gpa", "gma"] },
+    { id: "uncle", parentIds: ["gpa", "gma"] },
+    { id: "mom" },
+  ],
+  partnerships: [
+    { personIds: ["gpa", "gma"], status: "current" },
+    { personIds: ["dad", "mom"], status: "current" },
+  ],
+};
+
+function generationsById(layout) {
+  return Object.fromEntries(layout.nodes.map((node) => [node.id, node.generation]));
+}
+
+test("places a married-in spouse in their partner's generation", () => {
+  const layout = layoutFamilyGraph(marriedInFamily);
+  assert.deepEqual(generationsById(layout), { gpa: 0, gma: 0, child: 2, dad: 1, uncle: 1, mom: 1 });
+  assert.equal(byId(layout, "mom").householdKey, byId(layout, "dad").householdKey);
+  assert.equal(byId(layout, "mom").y, byId(layout, "dad").y);
+  assert.ok(byId(layout, "child").y > byId(layout, "dad").y);
+});
+
+test("infers the same generations regardless of input order", () => {
+  const expected = generationsById(layoutFamilyGraph(marriedInFamily));
+  const orders = [
+    [...marriedInFamily.people].reverse(),
+    [5, 2, 0, 3, 1, 4].map((index) => marriedInFamily.people[index]),
+  ];
+  for (const people of orders) {
+    assert.deepEqual(generationsById(layoutFamilyGraph({ ...marriedInFamily, people })), expected);
+  }
+});
+
+test("a married-in spouse follows an explicit partner generation", () => {
+  const layout = layoutFamilyGraph({
+    people: [{ id: "a", generation: 3 }, { id: "b" }],
+    partnerships: [{ personIds: ["a", "b"], status: "divorced" }],
+  });
+  assert.equal(byId(layout, "b").generation, 3);
+});
+
 test("row solver preserves order and distributes collisions", () => {
   const positions = solveLayoutRow([
     { width: 100, desiredLeft: 500 },

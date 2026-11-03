@@ -1,6 +1,7 @@
 import type {
   FamilyGraph,
   FamilyLayout,
+  FamilyPartnership,
   FamilyPerson,
   LayoutEdge,
   LayoutNode,
@@ -49,28 +50,66 @@ class DisjointSet {
   }
 }
 
-function inferGenerations(people: readonly FamilyPerson[]): ReadonlyMap<string, number> {
+function inferGenerations(
+  people: readonly FamilyPerson[],
+  partnerships: readonly FamilyPartnership[],
+): ReadonlyMap<string, number> {
   const byId = new Map(people.map((person) => [person.id, person]));
+  const parentsOf = new Map(
+    people.map((person) => [person.id, (person.parentIds ?? []).filter((id) => byId.has(id))]),
+  );
+  const partnersOf = new Map<string, string[]>(people.map((person) => [person.id, []]));
+  for (const { personIds: [left, right] } of partnerships) {
+    if (left === right || !byId.has(left) || !byId.has(right)) continue;
+    partnersOf.get(left)?.push(right);
+    partnersOf.get(right)?.push(left);
+  }
+  const isRoot = (id: string): boolean => (parentsOf.get(id) ?? []).length === 0;
+
   const generations = new Map<string, number>();
   for (const person of people) {
     if (person.generation !== undefined) generations.set(person.id, person.generation);
-    else if (!person.parentIds?.some((id) => byId.has(id))) generations.set(person.id, 0);
   }
 
-  for (let pass = 0; pass < people.length; pass += 1) {
-    let changed = false;
-    for (const person of people) {
-      if (generations.has(person.id)) continue;
-      const knownParents = (person.parentIds ?? [])
-        .map((id) => generations.get(id))
-        .filter((value): value is number => value !== undefined);
-      if (knownParents.length === 0) continue;
-      generations.set(person.id, Math.max(...knownParents) + 1);
-      changed = true;
+  // Values are only ever set once they are fully determined, so the result does not depend on input order.
+  const propagate = (): void => {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const person of people) {
+        if (generations.has(person.id)) continue;
+        const parents = parentsOf.get(person.id) ?? [];
+        let generation: number | undefined;
+        if (parents.length > 0) {
+          // A child sits below the deepest parent, so wait until every parent is known.
+          const known = parents.map((id) => generations.get(id));
+          if (known.every((value): value is number => value !== undefined)) generation = Math.max(...known) + 1;
+        } else {
+          // Someone who married into the family has no parents here: take the partner's generation.
+          const known = (partnersOf.get(person.id) ?? [])
+            .map((id) => generations.get(id))
+            .filter((value): value is number => value !== undefined);
+          if (known.length > 0) generation = Math.max(...known);
+        }
+        if (generation === undefined) continue;
+        generations.set(person.id, generation);
+        changed = true;
+      }
     }
-    if (!changed) break;
+  };
+
+  propagate();
+  while (generations.size < people.length) {
+    // Start a new top row from roots whose partners are roots too (e.g. the oldest couple).
+    // Married-in spouses wait for their partner instead of defaulting to the top row.
+    let unresolvedRoots = people.filter((person) => !generations.has(person.id) && isRoot(person.id));
+    const topRoots = unresolvedRoots.filter((person) => (partnersOf.get(person.id) ?? []).every(isRoot));
+    if (topRoots.length > 0) unresolvedRoots = topRoots;
+    // Ancestry cycles leave people that can never be resolved; fall back to row 0 for them.
+    const seeds = unresolvedRoots.length > 0 ? unresolvedRoots : people.filter((person) => !generations.has(person.id));
+    for (const person of seeds) generations.set(person.id, 0);
+    propagate();
   }
-  for (const person of people) if (!generations.has(person.id)) generations.set(person.id, 0);
   return generations;
 }
 
@@ -110,7 +149,7 @@ function createHouseholds(graph: FamilyGraph, config: Required<LayoutOptions>): 
   personHousehold: ReadonlyMap<string, string>;
 } {
   const byId = new Map(graph.people.map((person) => [person.id, person]));
-  const generations = inferGenerations(graph.people);
+  const generations = inferGenerations(graph.people, graph.partnerships ?? []);
   const sets = new DisjointSet();
   graph.people.forEach((person) => sets.add(person.id));
   for (const partnership of graph.partnerships ?? []) {
