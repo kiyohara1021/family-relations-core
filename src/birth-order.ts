@@ -1,3 +1,4 @@
+import { englishOrdinal } from "./ordinal.js";
 import type { FamilyPerson, Locale } from "./types.js";
 
 export type BirthOrder = {
@@ -22,20 +23,6 @@ function japaneseLabel(person: FamilyPerson, rank: number): string {
   if (person.sex === "male") return male[rank - 1] ?? `第${rank}男`;
   if (person.sex === "female") return female[rank - 1] ?? `第${rank}女`;
   return `第${rank}子`;
-}
-
-function englishOrdinal(rank: number): string {
-  const mod100 = rank % 100;
-  const suffix = mod100 >= 11 && mod100 <= 13
-    ? "th"
-    : rank % 10 === 1
-      ? "st"
-      : rank % 10 === 2
-        ? "nd"
-        : rank % 10 === 3
-          ? "rd"
-          : "th";
-  return `${rank}${suffix}`;
 }
 
 function englishLabel(person: FamilyPerson, rank: number): string {
