@@ -14,6 +14,7 @@
 ## 特長
 
 - 共通祖先への最短経路から、直系・きょうだい・おじ/おば・甥/姪・いとこを判定
+- 生年月日があれば、兄・弟・姉・妹、従兄・従弟・従姉・従妹、伯父・叔父を区別
 - 配偶者、配偶者の血族、血族の配偶者を1段階だけ補完
 - 長男・次男、長女・次女などを生年月日順で判定
 - 不明な親、ID重複、自己参照、循環、世代矛盾、パートナー関係を構造化エラーで検出
@@ -71,7 +72,7 @@ layoutFamilyGraph(family); // nodes, edges, width, height
 
 ### `describeRelationship(graph, fromId, toId, options?)`
 
-表示ラベルだけでなく、`kind`、共通祖先、上る世代数`up`、下る世代数`down`、いとこの次数と世代差を返します。
+表示ラベルだけでなく、`kind`、共通祖先、上る世代数`up`、下る世代数`down`、いとこの次数と世代差を返します。きょうだい・いとこ・おじ/おばでは、生年月日で決められるときに`seniority`（`elder`または`younger`）も返します。
 
 ```ts
 const relation = describeRelationship(family, "person-a", "person-b", {

@@ -38,14 +38,14 @@ test("supports Japanese labels and elder/younger aunt distinction", () => {
   assert.equal(describeRelationship(graph, "self", "grandparent", { locale: "ja" }).label, "祖母");
   assert.equal(describeRelationship(graph, "grandparent", "self", { locale: "ja" }).label, "孫");
   assert.equal(describeRelationship(graph, "self", "aunt", { locale: "ja" }).label, "伯母");
-  assert.equal(describeRelationship(graph, "self", "cousin", { locale: "ja" }).label, "従姉妹");
+  assert.equal(describeRelationship(graph, "self", "cousin", { locale: "ja" }).label, "従姉");
 });
 
 test("adds spouse and relative-spouse relationships without mutating data", () => {
   assert.equal(describeRelationship(graph, "self", "spouse").label, "spouse");
   assert.equal(describeRelationship(graph, "self", "sibling-spouse").label, "brother's spouse");
   const labels = relationshipLabels(graph, "self", { locale: "ja" });
-  assert.equal(labels.get("sibling-spouse").label, "兄弟の配偶者");
+  assert.equal(labels.get("sibling-spouse").label, "弟の配偶者");
   assert.equal(labels.size, graph.people.length);
 });
 
@@ -62,4 +62,34 @@ test("handles first cousins once removed", () => {
   const relationship = describeRelationship(extended, "self", "cousin-child");
   assert.equal(relationship.label, "first cousin once removed");
   assert.equal(relationship.removed, 1);
+});
+
+test("distinguishes elder and younger siblings and first cousins in Japanese", () => {
+  const ja = { locale: "ja" };
+  assert.equal(describeRelationship(graph, "self", "sibling", ja).label, "弟");
+  assert.equal(describeRelationship(graph, "sibling", "self", ja).label, "姉");
+  assert.equal(describeRelationship(graph, "self", "cousin", ja).label, "従姉");
+  assert.equal(describeRelationship(graph, "cousin", "sibling", ja).label, "従弟");
+  assert.equal(describeRelationship(graph, "self", "sibling").seniority, "younger");
+  // English labels do not change
+  assert.equal(describeRelationship(graph, "self", "sibling").label, "brother");
+});
+
+test("falls back to the combined label when birth order is unknown or equal", () => {
+  const people = [
+    { id: "p" },
+    { id: "a", sex: "male", parentIds: ["p"], birthDate: { year: 1990, month: 4, day: 1 } },
+    { id: "twin", sex: "male", parentIds: ["p"], birthDate: { year: 1990, month: 4, day: 1 } },
+    { id: "undated", sex: "female", parentIds: ["p"] },
+    { id: "year-only", sex: "male", parentIds: ["p"], birthDate: { year: 1990 } },
+    { id: "unknown-sex", parentIds: ["p"], birthDate: { year: 1985 } },
+  ];
+  const family = { people };
+  const ja = { locale: "ja" };
+  assert.equal(describeRelationship(family, "a", "twin", ja).label, "兄弟");
+  assert.equal(describeRelationship(family, "a", "twin", ja).seniority, undefined);
+  assert.equal(describeRelationship(family, "a", "undated", ja).label, "姉妹");
+  // 1990 and 1990-04-01 share a year but the month is unknown on one side
+  assert.equal(describeRelationship(family, "a", "year-only", ja).label, "兄弟");
+  assert.equal(describeRelationship(family, "a", "unknown-sex", ja).label, "きょうだい");
 });

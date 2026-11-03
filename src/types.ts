@@ -84,6 +84,11 @@ export type Relationship = {
   commonAncestorId?: string;
   cousinDegree?: number;
   removed?: number;
+  /**
+   * Born before (`elder`) or after (`younger`) the reference person for siblings and first cousins,
+   * or the reference person's parent for aunts and uncles. Absent when birth dates cannot decide it.
+   */
+  seniority?: "elder" | "younger";
   viaId?: string;
 };
 

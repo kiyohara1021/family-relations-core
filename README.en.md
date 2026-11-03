@@ -71,7 +71,7 @@ See [examples/anonymous-family.json](examples/anonymous-family.json) for a compl
 
 ### `describeRelationship(graph, fromId, toId, options?)`
 
-Returns a display label together with `kind`, closest common ancestor, upward and downward steps, cousin degree, and removal.
+Returns a display label together with `kind`, closest common ancestor, upward and downward steps, cousin degree, and removal. For siblings, first cousins and aunts/uncles it also returns `seniority` (`elder` or `younger`) when birth dates decide it; Japanese labels then use 兄/弟/姉/妹 and 従兄/従弟/従姉/従妹.
 
 ### `relationshipLabels(graph, fromId, options?)`
 

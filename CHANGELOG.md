@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- `Relationship.seniority` (`elder` / `younger`) for siblings, first cousins and aunts/uncles when birth dates decide it.
+
+### Changed
+
+- Japanese labels distinguish elder and younger siblings (兄・弟・姉・妹) and first cousins (従兄・従弟・従姉・従妹). Without a decisive birth order they fall back to 兄弟・姉妹・従兄弟・従姉妹 as before.
+- The elder/younger comparison (including 伯父・叔父) uses partial dates only as far as both are known, so a year-only date no longer counts as January 1. `getBirthOrder` is unchanged.
+
 ## [0.1.1] - 2026-08-14
 
 ### Changed
