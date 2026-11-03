@@ -64,6 +64,24 @@ test("handles first cousins once removed", () => {
   assert.equal(relationship.removed, 1);
 });
 
+function cousinsAtDegree(degree) {
+  // Two lines descend from one ancestor; people `degree + 1` generations down are cousins of that degree.
+  const people = [{ id: "root" }];
+  for (const side of ["a", "b"]) {
+    for (let depth = 1; depth <= degree + 1; depth += 1) {
+      people.push({ id: `${side}${depth}`, parentIds: [depth === 1 ? "root" : `${side}${depth - 1}`] });
+    }
+  }
+  return { people };
+}
+
+test("uses correct English ordinals for distant cousins", () => {
+  for (const [degree, label] of [[5, "fifth cousin"], [6, "6th cousin"], [11, "11th cousin"], [21, "21st cousin"], [22, "22nd cousin"], [23, "23rd cousin"]]) {
+    const graph = cousinsAtDegree(degree);
+    assert.equal(describeRelationship(graph, `a${degree + 1}`, `b${degree + 1}`).label, label);
+  }
+});
+
 test("distinguishes elder and younger siblings and first cousins in Japanese", () => {
   const ja = { locale: "ja" };
   assert.equal(describeRelationship(graph, "self", "sibling", ja).label, "弟");

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- English cousin labels beyond the fifth degree use correct ordinals (`21st`, `22nd`, `23rd`) instead of always appending `th`.
+
 ### Added
 
 - `Relationship.seniority` (`elder` / `younger`) for siblings, first cousins and aunts/uncles when birth dates decide it.

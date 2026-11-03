@@ -5,6 +5,7 @@ import type {
   Locale,
   Relationship,
 } from "./types.js";
+import { englishOrdinal } from "./ordinal.js";
 
 type BloodPath = {
   up: number;
@@ -111,7 +112,7 @@ function englishDescendant(person: FamilyPerson, depth: number): string {
 }
 
 function ordinalWord(value: number): string {
-  return ["", "first", "second", "third", "fourth", "fifth"][value] ?? `${value}th`;
+  return ["", "first", "second", "third", "fourth", "fifth"][value] ?? englishOrdinal(value);
 }
 
 function removedWord(value: number): string {
