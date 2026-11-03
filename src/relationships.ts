@@ -13,9 +13,26 @@ type BloodPath = {
   ancestorId: string;
 };
 
-function birthKey(person?: FamilyPerson): number | undefined {
-  const date = person?.birthDate;
-  return date ? date.year * 10_000 + (date.month ?? 1) * 100 + (date.day ?? 1) : undefined;
+type Seniority = "elder" | "younger";
+
+/**
+ * Whether `person` was born before or after `other`. Partial dates are compared only as far
+ * as both are known, so 1980 and 1980-06 are left undecided instead of guessing January.
+ */
+function compareBirth(person?: FamilyPerson, other?: FamilyPerson): Seniority | undefined {
+  const left = person?.birthDate;
+  const right = other?.birthDate;
+  if (!left || !right) return undefined;
+  const parts: Array<[number | undefined, number | undefined]> = [
+    [left.year, right.year],
+    [left.month, right.month],
+    [left.day, right.day],
+  ];
+  for (const [a, b] of parts) {
+    if (a === undefined || b === undefined) return undefined;
+    if (a !== b) return a < b ? "elder" : "younger";
+  }
+  return undefined;
 }
 
 function ancestorDepths(startId: string, byId: ReadonlyMap<string, FamilyPerson>): Map<string, number> {
@@ -108,27 +125,28 @@ function collateralSeniority(
   fromId: string,
   people: readonly FamilyPerson[],
   byId: ReadonlyMap<string, FamilyPerson>,
-): "elder" | "younger" | undefined {
+): Seniority | undefined {
   const fromDepths = ancestorDepths(fromId, byId);
   const directBranch = people.find(
     (person) => fromDepths.get(person.id) === path.up - 1 && person.parentIds?.includes(path.ancestorId),
   );
-  const targetBirth = birthKey(target);
-  const branchBirth = birthKey(directBranch);
-  if (targetBirth === undefined || branchBirth === undefined || targetBirth === branchBirth) return undefined;
-  return targetBirth < branchBirth ? "elder" : "younger";
+  return compareBirth(target, directBranch);
 }
 
 function japaneseBloodLabel(
   target: FamilyPerson,
   path: BloodPath,
-  seniority?: "elder" | "younger",
+  seniority?: Seniority,
 ): string {
   const { up, down } = path;
   if (up === 0 && down === 0) return "自分";
   if (down === 0) return japaneseAncestor(target, up);
   if (up === 0) return japaneseDescendant(target, down);
-  if (up === 1 && down === 1) return sexWord(target, "兄弟", "姉妹", "きょうだい");
+  if (up === 1 && down === 1) {
+    if (seniority === "elder") return sexWord(target, "兄", "姉", "きょうだい");
+    if (seniority === "younger") return sexWord(target, "弟", "妹", "きょうだい");
+    return sexWord(target, "兄弟", "姉妹", "きょうだい");
+  }
   if (down === 1) {
     const prefix = up === 2 ? "" : up === 3 ? "大" : `${up - 1}代上の`;
     if (seniority === "elder") return sexWord(target, `${prefix}伯父`, `${prefix}伯母`, `${prefix}伯父・伯母`);
@@ -141,7 +159,11 @@ function japaneseBloodLabel(
   }
   const degree = Math.min(up, down) - 1;
   const removed = Math.abs(up - down);
-  if (degree === 1 && removed === 0) return sexWord(target, "従兄弟", "従姉妹", "いとこ");
+  if (degree === 1 && removed === 0) {
+    if (seniority === "elder") return sexWord(target, "従兄", "従姉", "いとこ");
+    if (seniority === "younger") return sexWord(target, "従弟", "従妹", "いとこ");
+    return sexWord(target, "従兄弟", "従姉妹", "いとこ");
+  }
   const degreeLabel = ["", "いとこ", "はとこ", "みいとこ"][degree] ?? `${degree}親等のいとこ`;
   return removed === 0 ? degreeLabel : `${degreeLabel}（${removed}世代違い）`;
 }
@@ -186,9 +208,14 @@ function bloodRelationship(
   if (!target) return undefined;
   const path = closestBloodPath(fromId, toId, byId);
   if (!path) return undefined;
+  // Aunts and uncles are compared with the parent on the reference person's side;
+  // siblings and first cousins are compared with the reference person.
+  const sameGeneration = path.up === path.down && path.up <= 2;
   const seniority = path.down === 1 && path.up >= 2
     ? collateralSeniority(target, path, fromId, graph.people, byId)
-    : undefined;
+    : sameGeneration && path.up >= 1
+      ? compareBirth(target, byId.get(fromId))
+      : undefined;
   const degree = path.up >= 2 && path.down >= 2 ? Math.min(path.up, path.down) - 1 : undefined;
   const removed = degree === undefined ? undefined : Math.abs(path.up - path.down);
   return {
@@ -200,6 +227,7 @@ function bloodRelationship(
     down: path.down,
     commonAncestorId: path.ancestorId,
     ...(degree === undefined ? {} : { cousinDegree: degree, removed: removed ?? 0 }),
+    ...(seniority === undefined ? {} : { seniority }),
   };
 }
 
